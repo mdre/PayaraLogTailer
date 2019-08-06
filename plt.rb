@@ -53,20 +53,32 @@ def levelColor(level)
 end
 ###########################################
 def packageHightLight(text, pkgs)
+    hlText = text
     pkgs.each do |pkg|
+        #puts "text: #{text} pkg: #{pkg}"
         if text.start_with? pkg
-            return colorize(text,LIGHTBLUE,BACKDEF)
+            hlText = colorize(text,LIGHTBLUE,BACKDEF)
+            break 
         end
     end
+    hlText
 end
 ###########################################
 options =  OpenStruct.new
 options.pkgs = []
+options.removeBlanks = true
+options.showFullTime = false
 
 OptionParser.new do |opts|
-    opts.banner = "Usave: plv <path-to-file> -p <packages, ...>"
+    opts.banner = "Usave: plt <path-to-file> -p <packages, ...>"
     opts.on("-p","--package x,y,z",Array,"hightlight package list") do |pkgs|
         options.pkgs = pkgs
+    end
+    opts.on("-s","--show-blank","show blank lines") do |rb|
+        options.removeBlanks = false
+    end
+    opts.on("-t","--fulltime","show the full time format") do |t|
+        options.showFullTime = true
     end
     opts.on_tail("-h", "--help", "Show this message") do
         puts opts
@@ -81,7 +93,11 @@ p ARGV[0]
 
 # https://rubular.com/
 LOG_FORMAT = %r{
-    \[(?<timestamp>[^\]]*)\]
+    \[
+        (?<date>[^T]*)\T
+        (?<time>[^\.]*)
+        (\.(?<millis>[^\]]*))?
+    \]
     \s\[(?<organizationID>[^\]]*)\] 
     \s\[(?<Level>[^\]]*)\] 
     \s\[(?<MessageID>[^\]]*)\]
@@ -115,18 +131,24 @@ File.open(filename) do |log|
     log.interval = 1 # 10
     log.backward(10)
     log.tail { |line| 
+            fLine = ""
+            # intentar matchear contra el formato de Log
             matchLine = line.match(LOG_FORMAT)
             if (matchLine!=nil)    
                 
-                sTimestamp = matchLine[:timestamp]
+                sDate = matchLine[:date]
+                sTime = matchLine[:time]
+                sMillis = options.showFullTime ? "."+matchLine[:millis] : ""
+
                 sLevel = colorize(matchLine[:Level],levelColor(matchLine[:Level]),BACKDEF)
-                sLogger = packageHightLight(matchLine[:LoggerName],options.pkgs)
+                sLogger = packageHightLight(matchLine[:LoggerName], options.pkgs)
                 sMethod = matchLine[:Method]
                 sMessage = matchLine[:Message]
                 
-                puts "[#{sTimestamp}] [#{sLevel}] [#{sLogger}] [#{sMethod}] #{sMessage}"
+                fLine = "[#{sDate} #{sTime}#{sMillis}]  [#{sLevel}] [#{sLogger}] [#{sMethod}] #{sMessage}"
                     
             else 
+                # si no mapea, intentar formatear la linea en busca de paquetes para el caso que sea una excepción
                 matchLine = line.match(LOG_EXCEPTION)
 
                 if (matchLine != nil)
@@ -134,13 +156,16 @@ File.open(filename) do |log|
                     sFile = matchLine[:filename]
                     sLine = matchLine[:linenum]
 
-                    line.sub(matchLine[:class],sClass)
+                    fLine = line.sub(matchLine[:class],sClass)
 
-                    puts line
                 else
-
-                    puts line
+                    fLine = line
+                    
                 end
+            end
+            
+            if !((fLine.empty? || fLine == "\n") && options.removeBlanks)
+                puts fLine
             end
             }
 end
