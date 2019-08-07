@@ -3,6 +3,8 @@
 require 'file-tail'
 require 'optparse'
 require 'ostruct'
+require 'io/console'
+
 
 #                   1                         2          3     4 5                    6                                                          7                                      8                             9                                                  
 # ll = "[2019-08-02T08:52:51.268-0300] [Payara 5.192] [GRAVE] [] [] [tid: _ThreadID=56 _ThreadName=http-thread-pool::http-listener-1(2)] [levelValue: 1000] [http-thread-pool::http-listener-1(2)] ERROR com.vaadin.flow.server.DefaultErrorHandler -"
@@ -64,6 +66,20 @@ def packageHightLight(text, pkgs)
     hlText
 end
 ###########################################
+def keyCapture() 
+    loop do
+        ch = $stdin.getch
+        case ch 
+        when 'q'    then exit
+        when "\c?"  then puts 'backspace'
+        when "\t"  then puts 'tab'
+        else 
+            puts ch
+        end
+    end
+end
+###########################################
+
 options =  OpenStruct.new
 options.pkgs = []
 options.removeBlanks = true
@@ -86,10 +102,9 @@ OptionParser.new do |opts|
     end
 end.parse!
 
-p options
-p ARGV
-p ARGV[0]
-
+#p options
+#p ARGV
+#p ARGV[0]
 
 # https://rubular.com/
 LOG_FORMAT = %r{
@@ -117,12 +132,9 @@ LOG_EXCEPTION = %r{
         (?<linenum>\d*)
     \)
 }
-# pLine = []
-# pLine = ll.match(LOG_FORMAT)
-# puts 
-#return
 
-
+###########################################
+#t1 = Thread.new{keyCapture()}
 
 filename = ARGV[0]
 
@@ -167,5 +179,5 @@ File.open(filename) do |log|
             if !((fLine.empty? || fLine == "\n") && options.removeBlanks)
                 puts fLine
             end
-            }
+        }
 end
