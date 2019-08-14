@@ -84,6 +84,7 @@ options =  OpenStruct.new
 options.pkgs = []
 options.removeBlanks = true
 options.showFullTime = false
+options.showFullLogLevelName = false
 
 OptionParser.new do |opts|
     opts.banner = "Usave: plt <path-to-file> -p <packages, ...>"
@@ -95,6 +96,9 @@ OptionParser.new do |opts|
     end
     opts.on("-t","--fulltime","show the full time format") do |t|
         options.showFullTime = true
+    end
+    opts.on("-l","--longLevelFormat","show the full logger level name") do |t|
+        options.showFullLogLevelName = true
     end
     opts.on_tail("-h", "--help", "Show this message") do
         puts opts
@@ -152,12 +156,12 @@ File.open(filename) do |log|
                 sTime = matchLine[:time]
                 sMillis = options.showFullTime ? "."+matchLine[:millis] : ""
 
-                sLevel = colorize(matchLine[:Level],levelColor(matchLine[:Level]),BACKDEF)
+                sLevel = colorize(options.showFullLogLevelName ? matchLine[:Level] : matchLine[:Level][0..3],levelColor(matchLine[:Level]),BACKDEF)
                 sLogger = packageHightLight(matchLine[:LoggerName], options.pkgs)
                 sMethod = matchLine[:Method]
                 sMessage = matchLine[:Message]
                 
-                fLine = "[#{sDate} #{sTime}#{sMillis}]  [#{sLevel}] [#{sLogger}] [#{sMethod}] #{sMessage}"
+                fLine = "[#{sDate} #{sTime}#{sMillis}] [#{sLevel}] [#{sLogger}] [#{sMethod}] #{sMessage}"
                     
             else 
                 # si no mapea, intentar formatear la linea en busca de paquetes para el caso que sea una excepción
