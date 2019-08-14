@@ -24,11 +24,8 @@ ej:
 ```
 cd /opt
 sudo gem install file-tail
->>>>>>> e4bf77f62a8a63dbffd87d7cf8726c90a888307c
 git clone git@github.com:mdre/PayaraLogTailer.git
-
 chmod 755 /opt/PayaraLogTailer/plt.rb 
-
 sudo ln -s /opt/PayaraLogTailer/plt.rb /usr/bin/plt
 ```
 
