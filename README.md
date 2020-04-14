@@ -29,6 +29,9 @@ chmod 755 /opt/PayaraLogTailer/plt.rb
 sudo ln -s /opt/PayaraLogTailer/plt.rb /usr/bin/plt
 ```
 
+- Unmark the multiline mode in: Configurations > server-config > Logger Settings > Multiline Mode.
+
+
 ## How to use:
 ```
 plt -p ar.gob.santafe,net.odbogm /opt/payara/glassfish/domains/domain1/logs/server.log

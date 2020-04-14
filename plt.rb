@@ -124,9 +124,14 @@ LOG_FORMAT = %r{
     \s\[(?<ThreadID>[^\]]*)\] 
     \s\[(?<UserID>[^\]]*)\] 
     (\s(?<ECID>\[[^\]]*\]))? 
-    (\s\[(?<Method>[^\]]*)\])? 
-    \s(?<Message>.*)
-}x
+    (\s\[CLASSNAME\:(?<Classname>[^\]]*)\])?
+    (\s\[METHODNAME\:(?<Method>[^\]]*)\])? 
+    \s(
+       \[{2}(?<Message>.*)\]\]
+       |
+       (?<Message>.*)
+       )
+}xm
 
 LOG_EXCEPTION = %r{
     \w*\s(?<class>(\w*)(\.\w*)*)
@@ -145,6 +150,7 @@ filename = ARGV[0]
 File.open(filename) do |log|
     log.extend(File::Tail)
     log.interval = 1 # 10
+    log.max_interval = 3
     log.backward(10)
     log.tail { |line| 
             fLine = ""
@@ -159,8 +165,8 @@ File.open(filename) do |log|
                 sLevel = colorize(options.showFullLogLevelName ? matchLine[:Level] : matchLine[:Level][0..3],levelColor(matchLine[:Level]),BACKDEF)
                 sLogger = packageHightLight(matchLine[:LoggerName], options.pkgs)
                 sMethod = matchLine[:Method]
-                sMessage = matchLine[:Message]
-                
+                sMessage = matchLine[:Message].strip()
+                 
                 fLine = "[#{sDate} #{sTime}#{sMillis}] [#{sLevel}] [#{sLogger}] [#{sMethod}] #{sMessage}"
                     
             else 
@@ -175,7 +181,7 @@ File.open(filename) do |log|
                     fLine = line.sub(matchLine[:class],sClass)
 
                 else
-                    fLine = line
+                    fLine = line.strip()
                     
                 end
             end
@@ -183,5 +189,6 @@ File.open(filename) do |log|
             if !((fLine.empty? || fLine == "\n") && options.removeBlanks)
                 puts fLine
             end
+            
         }
 end
