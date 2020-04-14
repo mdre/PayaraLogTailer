@@ -24,7 +24,7 @@ ej:
 ```
 cd /opt
 sudo gem install file-tail
-git clone git@github.com:mdre/PayaraLogTailer.git
+git clone https://github.com/mdre/PayaraLogTailer.git
 chmod 755 /opt/PayaraLogTailer/plt.rb 
 sudo ln -s /opt/PayaraLogTailer/plt.rb /usr/bin/plt
 ```
